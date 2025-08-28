@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(222 84% 5%);
+  --foreground: hsl(210 40% 95%);
+  --card: hsl(222 47% 11%);
+  --card-foreground: hsl(210 40% 95%);
+  --popover: hsl(222 47% 11%);
+  --popover-foreground: hsl(210 40% 95%);
+  --primary: hsl(217 91% 60%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(217 32% 17%);
+  --secondary-foreground: hsl(210 40% 95%);
+  --muted: hsl(215 27.9% 16.9%);
+  --muted-foreground: hsl(217.9 10.6% 64.9%);
+  --accent: hsl(142 71% 45%);
+  --accent-foreground: hsl(210 40% 98%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(217 32% 17%);
+  --input: hsl(217 32% 17%);
+  --ring: hsl(217 91% 60%);
+  --chart-1: hsl(217 91% 60%);
+  --chart-2: hsl(142 71% 45%);
+  --chart-3: hsl(42.0290 92.8251% 56.2745%);
+  --chart-4: hsl(147.1429 78.5047% 41.9608%);
+  --chart-5: hsl(341.4894 75.2000% 50.9804%);
+  --sidebar: hsl(222 47% 11%);
+  --sidebar-foreground: hsl(210 40% 95%);
+  --sidebar-primary: hsl(217 91% 60%);
+  --sidebar-primary-foreground: hsl(210 40% 98%);
+  --sidebar-accent: hsl(142 71% 45%);
+  --sidebar-accent-foreground: hsl(210 40% 98%);
+  --sidebar-border: hsl(217 32% 17%);
+  --sidebar-ring: hsl(217 91% 60%);
+  --font-sans: 'Open Sans', sans-serif;
+  --font-serif: 'Libre Baskerville', serif;
+  --font-mono: 'Fira Code', monospace;
+  --radius: 8px;
+  --shadow-2xs: 0px 2px 0px 0px hsl(217 91% 60% / 0.05);
+  --shadow-xs: 0px 2px 0px 0px hsl(217 91% 60% / 0.05);
+  --shadow-sm: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 1px 2px -1px hsl(217 91% 60% / 0.05);
+  --shadow: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 1px 2px -1px hsl(217 91% 60% / 0.05);
+  --shadow-md: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 2px 4px -1px hsl(217 91% 60% / 0.05);
+  --shadow-lg: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 4px 6px -1px hsl(217 91% 60% / 0.05);
+  --shadow-xl: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 8px 10px -1px hsl(217 91% 60% / 0.05);
+  --shadow-2xl: 0px 2px 0px 0px hsl(217 91% 60% / 0.05);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(222 84% 5%);
+  --foreground: hsl(210 40% 95%);
+  --card: hsl(222 47% 11%);
+  --card-foreground: hsl(210 40% 95%);
+  --popover: hsl(222 47% 11%);
+  --popover-foreground: hsl(210 40% 95%);
+  --primary: hsl(217 91% 60%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(217 32% 17%);
+  --secondary-foreground: hsl(210 40% 95%);
+  --muted: hsl(215 27.9% 16.9%);
+  --muted-foreground: hsl(217.9 10.6% 64.9%);
+  --accent: hsl(142 71% 45%);
+  --accent-foreground: hsl(210 40% 98%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(217 32% 17%);
+  --input: hsl(217 32% 17%);
+  --ring: hsl(217 91% 60%);
+  --chart-1: hsl(217 91% 60%);
+  --chart-2: hsl(142 71% 45%);
+  --chart-3: hsl(42.0290 92.8251% 56.2745%);
+  --chart-4: hsl(147.1429 78.5047% 41.9608%);
+  --chart-5: hsl(341.4894 75.2000% 50.9804%);
+  --sidebar: hsl(222 47% 11%);
+  --sidebar-foreground: hsl(210 40% 95%);
+  --sidebar-primary: hsl(217 91% 60%);
+  --sidebar-primary-foreground: hsl(210 40% 98%);
+  --sidebar-accent: hsl(142 71% 45%);
+  --sidebar-accent-foreground: hsl(210 40% 98%);
+  --sidebar-border: hsl(217 32% 17%);
+  --sidebar-ring: hsl(217 91% 60%);
+  --font-sans: 'Open Sans', sans-serif;
+  --font-serif: 'Libre Baskerville', serif;
+  --font-mono: 'Fira Code', monospace;
+  --radius: 8px;
+  --shadow-2xs: 0px 2px 0px 0px hsl(217 91% 60% / 0.05);
+  --shadow-xs: 0px 2px 0px 0px hsl(217 91% 60% / 0.05);
+  --shadow-sm: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 1px 2px -1px hsl(217 91% 60% / 0.05);
+  --shadow: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 1px 2px -1px hsl(217 91% 60% / 0.05);
+  --shadow-md: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 2px 4px -1px hsl(217 91% 60% / 0.05);
+  --shadow-lg: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 4px 6px -1px hsl(217 91% 60% / 0.05);
+  --shadow-xl: 0px 2px 0px 0px hsl(217 91% 60% / 0.05), 0px 8px 10px -1px hsl(217 91% 60% / 0.05);
+  --shadow-2xl: 0px 2px 0px 0px hsl(217 91% 60% / 0.05);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  html {
+    @apply dark;
+  }
+}
+
+/* Wave Animation for Audio Visualization */
+.wave-animation {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wave-bar {
+  width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: wave 1.5s ease-in-out infinite;
+}
+
+.wave-bar:nth-child(1) { height: 12px; animation-delay: 0s; }
+.wave-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { height: 16px; animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { height: 24px; animation-delay: 0.3s; }
+.wave-bar:nth-child(5) { height: 14px; animation-delay: 0.4s; }
+
+@keyframes wave {
+  0%, 100% { 
+    transform: scaleY(0.5); 
+    opacity: 0.7; 
+  }
+  50% { 
+    transform: scaleY(1); 
+    opacity: 1; 
+  }
+}
+
+/* Hide scrollbars for WebKit browsers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar styling for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Recording pulse animation */
+@keyframes recording-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.recording-pulse {
+  animation: recording-pulse 1s ease-in-out infinite;
+}
