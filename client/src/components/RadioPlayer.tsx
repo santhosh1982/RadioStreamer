@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useWebSocket } from "@/hooks/useWebSocket";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { 
@@ -40,31 +39,6 @@ export default function RadioPlayer({
 }: RadioPlayerProps) {
   const [volume, setVolume] = useState([75]);
   const [isFavorite, setIsFavorite] = useState(false);
-
-  const { sendMessage } = useWebSocket({
-    onMessage: (message) => {
-      if (message.type === 'stream_started' && station) {
-        console.log(`Stream started for ${station.name}`);
-      } else if (message.type === 'stream_stopped') {
-        console.log('Stream stopped');
-      }
-    },
-  });
-
-  useEffect(() => {
-    if (isPlaying && station) {
-      sendMessage({
-        type: 'start_stream',
-        stationId: station.id,
-        stationUrl: station.url,
-      });
-    } else if (!isPlaying && station) {
-      sendMessage({
-        type: 'stop_stream',
-        stationId: station.id,
-      });
-    }
-  }, [isPlaying, station, sendMessage]);
 
   const WaveAnimation = () => (
     <div className="flex items-center gap-0.5">

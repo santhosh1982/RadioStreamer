@@ -233,9 +233,9 @@ export default function RecordingPanel() {
               </div>
             ))}
           </div>
-        ) : recordings.length > 0 ? (
+        ) : (recordings as Recording[]).length > 0 ? (
           <div className="space-y-3">
-            {recordings.slice(0, 4).map((recording: Recording) => (
+            {(recordings as Recording[]).slice(0, 4).map((recording: Recording) => (
               <div
                 key={recording.id}
                 className="flex items-center gap-4 p-3 hover:bg-secondary/50 rounded-lg transition-colors"

@@ -19,21 +19,10 @@ import {
   Volume2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Station {
-  id: string;
-  name: string;
-  url: string;
-  genre: string;
-  description?: string;
-  city?: string;
-  country?: string;
-  listenerCount: number;
-  isActive: boolean;
-}
+import type { RadioStation } from "@shared/schema";
 
 interface StationGridProps {
-  onStationSelect: (station: Station) => void;
+  onStationSelect: (station: RadioStation) => void;
   selectedStationId?: string;
   className?: string;
 }
@@ -103,14 +92,14 @@ export default function StationGrid({ onStationSelect, selectedStationId, classN
     },
   });
 
-  const genres = ["All", ...Array.from(new Set(stations.map((s: Station) => s.genre)))];
+  const genres = ["All", ...Array.from(new Set((stations as RadioStation[]).map((s: RadioStation) => s.genre)))];
   
-  const filteredStations = stations.filter((station: Station) => 
+  const filteredStations = (stations as RadioStation[]).filter((station: RadioStation) => 
     selectedGenre === "All" || station.genre === selectedGenre
   );
 
   const isFavorite = (stationId: string) => 
-    favorites.some((fav: any) => fav.stationId === stationId);
+    (favorites as any[]).some((fav: any) => fav.stationId === stationId);
 
   const handleFavoriteToggle = (stationId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -173,7 +162,7 @@ export default function StationGrid({ onStationSelect, selectedStationId, classN
 
       {/* Station Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredStations.map((station: Station, index: number) => {
+        {filteredStations.map((station: RadioStation, index: number) => {
           const IconComponent = getStationIcon(station.genre);
           const isSelected = selectedStationId === station.id;
           const stationIsFavorite = isFavorite(station.id);
@@ -207,9 +196,9 @@ export default function StationGrid({ onStationSelect, selectedStationId, classN
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-accent rounded-full" />
                   <span className="text-xs text-muted-foreground">
-                    {station.listenerCount >= 1000 
-                      ? `${(station.listenerCount / 1000).toFixed(1)}k`
-                      : station.listenerCount}
+                    {(station.listenerCount || 0) >= 1000 
+                      ? `${((station.listenerCount || 0) / 1000).toFixed(1)}k`
+                      : (station.listenerCount || 0)}
                   </span>
                 </div>
               </div>

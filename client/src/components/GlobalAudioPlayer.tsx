@@ -13,16 +13,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Station {
-  id: string;
-  name: string;
-  genre: string;
-  city?: string;
-  country?: string;
-}
+import type { RadioStation } from "@shared/schema";
 
 interface GlobalAudioPlayerProps {
-  currentStation?: Station;
+  currentStation?: RadioStation;
   isPlaying: boolean;
   isRecording: boolean;
   onPlayPause: () => void;

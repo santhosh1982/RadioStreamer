@@ -29,6 +29,12 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    proxy: {
+      '/ws': {
+        target: 'ws://localhost:3000',
+        ws: true,
+      },
+    },
     fs: {
       strict: true,
       deny: ["**/.*"],

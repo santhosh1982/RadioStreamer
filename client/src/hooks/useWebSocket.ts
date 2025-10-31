@@ -7,6 +7,7 @@ interface WebSocketMessage {
 
 interface UseWebSocketOptions {
   onMessage?: (message: WebSocketMessage) => void;
+  onBinaryMessage?: (data: ArrayBuffer) => void; // Add this line
   onError?: (error: Event) => void;
   onOpen?: () => void;
   onClose?: () => void;
@@ -30,6 +31,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       const wsUrl = `${protocol}//${window.location.host}/ws`;
       
       wsRef.current = new WebSocket(wsUrl);
+      wsRef.current.binaryType = 'arraybuffer'; // Add this line
 
       wsRef.current.onopen = () => {
         console.log('WebSocket connected');
@@ -40,11 +42,15 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       };
 
       wsRef.current.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          options.onMessage?.(message);
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
+        if (typeof event.data === 'string') {
+          try {
+            const message = JSON.parse(event.data);
+            options.onMessage?.(message);
+          } catch (error) {
+            console.error('Failed to parse WebSocket message:', error);
+          }
+        } else if (event.data instanceof ArrayBuffer) {
+          options.onBinaryMessage?.(event.data);
         }
       };
 

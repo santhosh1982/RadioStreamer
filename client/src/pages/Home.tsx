@@ -5,10 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/Sidebar";
 import StationGrid from "@/components/StationGrid";
-import RadioPlayer from "@/components/RadioPlayer";
 import RecordingPanel from "@/components/RecordingPanel";
 import AIAssistant from "@/components/AIAssistant";
-import GlobalAudioPlayer from "@/components/GlobalAudioPlayer";
+import type { RadioStation } from "@shared/schema";
 import { 
   Search, 
   ChevronLeft, 
@@ -18,24 +17,12 @@ import {
   User,
   Settings
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-interface Station {
-  id: string;
-  name: string;
-  url: string;
-  genre: string;
-  description?: string;
-  city?: string;
-  country?: string;
-  listenerCount: number;
-  isActive: boolean;
+interface HomeProps {
+  onSelectStation: (station: RadioStation) => void;
 }
 
-export default function Home() {
-  const [selectedStation, setSelectedStation] = useState<Station | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
+export default function Home({ onSelectStation }: HomeProps) {
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
@@ -45,21 +32,6 @@ export default function Home() {
     refetchInterval: 5000, // Refresh every 5 seconds
     enabled: !!user,
   });
-
-  const handleStationSelect = (station: Station) => {
-    setSelectedStation(station);
-    setIsPlaying(true);
-  };
-
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleRecord = () => {
-    if (!selectedStation) return;
-    setIsRecording(!isRecording);
-    // Recording logic will be handled by WebSocket in RadioPlayer
-  };
 
   const handleAIStationSelect = (stationName: string) => {
     // This would typically search for the station and select it
@@ -131,11 +103,11 @@ export default function Home() {
               </Button>
               
               {/* Recording Status */}
-              {activeRecordings.length > 0 && (
+              {(activeRecordings as any[]).length > 0 && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-destructive/20 text-destructive rounded-lg">
                   <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
                   <span className="text-sm font-medium">
-                    Recording {activeRecordings.length}
+                    Recording {(activeRecordings as any[]).length}
                   </span>
                 </div>
               )}
@@ -174,105 +146,10 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Button
-                variant="outline"
-                className="p-4 h-auto justify-start hover:border-primary group"
-                onClick={() => selectedStation && handlePlayPause()}
-                disabled={!selectedStation}
-                data-testid="continue-playing-action"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-                    <span className="text-primary text-lg">▶</span>
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-medium">Continue Playing</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedStation?.name || "No station selected"}
-                    </p>
-                  </div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="p-4 h-auto justify-start hover:border-accent group"
-                onClick={handleRecord}
-                disabled={!selectedStation}
-                data-testid="start-recording-action"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center group-hover:bg-accent/30 transition-colors">
-                    <Circle className="text-accent" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-medium">Start Recording</h3>
-                    <p className="text-sm text-muted-foreground">Capture live audio</p>
-                  </div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="p-4 h-auto justify-start hover:border-primary group"
-                data-testid="my-recordings-action"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-                    <span className="text-primary text-lg">📁</span>
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-medium">My Recordings</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {activeRecordings.length} saved files
-                    </p>
-                  </div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="p-4 h-auto justify-start hover:border-accent group"
-                onClick={() => setIsAIOpen(true)}
-                data-testid="ask-ai-action"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center group-hover:bg-accent/30 transition-colors">
-                    <Bot className="text-accent" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-medium">Ask AI</h3>
-                    <p className="text-sm text-muted-foreground">Find stations</p>
-                  </div>
-                </div>
-              </Button>
-            </div>
-
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              {/* Radio Player */}
-              <div className="lg:col-span-1">
-                <RadioPlayer
-                  station={selectedStation || undefined}
-                  isPlaying={isPlaying}
-                  onPlayPause={handlePlayPause}
-                  onRecord={handleRecord}
-                  isRecording={isRecording}
-                />
-              </div>
-
-              {/* Recording Panel */}
-              <div className="lg:col-span-2">
-                <RecordingPanel />
-              </div>
-            </div>
-
             {/* Station Grid */}
             <StationGrid
-              onStationSelect={handleStationSelect}
-              selectedStationId={selectedStation?.id}
+              onStationSelect={onSelectStation}
+              selectedStationId={undefined} // This needs to be implemented
             />
           </div>
         </main>
@@ -283,15 +160,6 @@ export default function Home() {
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
         onStationSelect={handleAIStationSelect}
-      />
-
-      {/* Global Audio Player */}
-      <GlobalAudioPlayer
-        currentStation={selectedStation || undefined}
-        isPlaying={isPlaying}
-        isRecording={isRecording}
-        onPlayPause={handlePlayPause}
-        onRecord={handleRecord}
       />
     </div>
   );

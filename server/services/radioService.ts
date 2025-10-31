@@ -72,7 +72,7 @@ export class RadioService {
   }
 
   stopAllStreams(): void {
-    for (const [stationId, stream] of this.activeStreams) {
+    for (const [stationId, stream] of Array.from(this.activeStreams)) {
       stream.destroy();
     }
     this.activeStreams.clear();

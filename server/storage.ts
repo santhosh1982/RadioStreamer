@@ -205,6 +205,45 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return updatedConversation;
   }
+
+  // Cleanup operations
+  async removeDuplicateRadioStations(): Promise<number> {
+    try {
+      // Get all stations
+      const allStations = await this.getRadioStations();
+      
+      // Group by URL to find duplicates
+      const urlGroups = new Map<string, RadioStation[]>();
+      for (const station of allStations) {
+        if (!urlGroups.has(station.url)) {
+          urlGroups.set(station.url, []);
+        }
+        urlGroups.get(station.url)!.push(station);
+      }
+
+      let deletedCount = 0;
+      
+      // For each URL group, keep the first one and delete the rest
+      for (const [url, stations] of Array.from(urlGroups)) {
+        if (stations.length > 1) {
+          // Sort by creation date and keep the oldest
+          stations.sort((a: RadioStation, b: RadioStation) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));
+          
+          // Delete all but the first one
+          for (let i = 1; i < stations.length; i++) {
+            await db.delete(radioStations).where(eq(radioStations.id, stations[i].id));
+            deletedCount++;
+          }
+        }
+      }
+
+      console.log(`Removed ${deletedCount} duplicate radio stations`);
+      return deletedCount;
+    } catch (error) {
+      console.error("Error removing duplicate stations:", error);
+      return 0;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

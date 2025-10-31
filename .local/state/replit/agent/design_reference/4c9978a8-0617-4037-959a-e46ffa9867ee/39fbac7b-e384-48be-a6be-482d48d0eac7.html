@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RadioWave - Live Radio Streaming & Recording</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                }
+            },
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --radius: 8px;
+            --background: hsl(222 84% 5%);
+            --foreground: hsl(210 40% 95%);
+            --card: hsl(222 47% 11%);
+            --card-foreground: hsl(210 40% 95%);
+            --popover: hsl(222 47% 11%);
+            --popover-foreground: hsl(210 40% 95%);
+            --primary: hsl(217 91% 60%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(217 32% 17%);
+            --secondary-foreground: hsl(210 40% 95%);
+            --muted: hsl(215 27.9% 16.9%);
+            --muted-foreground: hsl(217.9 10.6% 64.9%);
+            --accent: hsl(142 71% 45%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 62.8% 30.6%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(217 32% 17%);
+            --input: hsl(217 32% 17%);
+            --ring: hsl(217 91% 60%);
+        }
+
+        .wave-animation {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .wave-bar {
+            width: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: wave 1.5s ease-in-out infinite;
+        }
+        
+        .wave-bar:nth-child(1) { height: 12px; animation-delay: 0s; }
+        .wave-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { height: 16px; animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { height: 24px; animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { height: 14px; animation-delay: 0.4s; }
+        
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); opacity: 0.7; }
+            50% { transform: scaleY(1); opacity: 1; }
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-background text-foreground font-sans">
+    <!-- @COMPONENT: MainLayout -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- @COMPONENT: Sidebar -->
+        <div class="w-64 bg-card border-r border-border flex flex-col">
+            <!-- Logo/Brand -->
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-radio text-primary-foreground text-sm"></i>
+                    </div>
+                    <span class="text-xl font-semibold">RadioWave</span>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="flex-1 p-4 space-y-2">
+                <div class="space-y-1">
+                    <h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Browse</h3>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary text-primary-foreground">
+                        <i class="fas fa-home w-4"></i>
+                        <span>Discover</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        <i class="fas fa-list w-4"></i>
+                        <span>My Stations</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        <i class="fas fa-clock w-4"></i>
+                        <span>Recent</span>
+                    </a>
+                </div>
+
+                <div class="space-y-1 pt-4">
+                    <h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Library</h3>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        <i class="fas fa-microphone w-4"></i>
+                        <span>Recordings</span>
+                        <span class="ml-auto bg-accent text-accent-foreground text-xs px-2 py-0.5 rounded-full">12</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        <i class="fas fa-heart w-4"></i>
+                        <span>Favorites</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        <i class="fas fa-download w-4"></i>
+                        <span>Downloads</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="p-4 border-t border-border">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+                        <span class="text-sm font-medium" data-bind="user.initials" data-mock="true">JD</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate" data-bind="user.name" data-mock="true">John Doe</p>
+                        <p class="text-xs text-muted-foreground">Premium</p>
+                    </div>
+                    <button class="text-muted-foreground hover:text-foreground">
+                        <i class="fas fa-cog w-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <div class="flex-1 flex flex-col">
+            <!-- @COMPONENT: TopBar -->
+            <header class="bg-card border-b border-border p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <button class="w-8 h-8 rounded-full bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center">
+                                <i class="fas fa-chevron-left text-sm"></i>
+                            </button>
+                            <button class="w-8 h-8 rounded-full bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center">
+                                <i class="fas fa-chevron-right text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Search Bar -->
+                        <div class="relative w-96">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Search stations, genres, or ask AI..."
+                                class="w-full pl-10 pr-4 py-2 bg-secondary text-foreground placeholder-muted-foreground rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                                data-mock="true"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <!-- AI Chat Toggle -->
+                        <button class="flex items-center gap-2 px-3 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors">
+                            <i class="fas fa-robot text-sm"></i>
+                            <span class="text-sm font-medium">AI Assistant</span>
+                        </button>
+                        
+                        <!-- Recording Status -->
+                        <div class="flex items-center gap-2 px-3 py-2 bg-destructive/20 text-destructive rounded-lg">
+                            <div class="w-2 h-2 bg-destructive rounded-full animate-pulse"></div>
+                            <span class="text-sm font-medium">Recording 2</span>
+                        </div>
+
+                        <!-- User Menu -->
+                        <button class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: TopBar -->
+
+            <!-- @COMPONENT: ContentArea -->
+            <main class="flex-1 overflow-y-auto">
+                <div class="p-6">
+                    <!-- Welcome Section -->
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-bold mb-2">Good evening, John!</h1>
+                        <p class="text-muted-foreground">Discover new stations or continue listening to your favorites</p>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="grid grid-cols-4 gap-4 mb-8">
+                        <button class="p-4 bg-card rounded-lg border border-border hover:border-primary transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                                    <i class="fas fa-play text-primary text-lg"></i>
+                                </div>
+                                <div class="text-left">
+                                    <h3 class="font-medium">Continue Playing</h3>
+                                    <p class="text-sm text-muted-foreground">Jazz FM 91.3</p>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button class="p-4 bg-card rounded-lg border border-border hover:border-accent transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center group-hover:bg-accent/30 transition-colors">
+                                    <i class="fas fa-microphone text-accent text-lg"></i>
+                                </div>
+                                <div class="text-left">
+                                    <h3 class="font-medium">Start Recording</h3>
+                                    <p class="text-sm text-muted-foreground">Capture live audio</p>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button class="p-4 bg-card rounded-lg border border-border hover:border-primary transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                                    <i class="fas fa-folder text-primary text-lg"></i>
+                                </div>
+                                <div class="text-left">
+                                    <h3 class="font-medium">My Recordings</h3>
+                                    <p class="text-sm text-muted-foreground">12 saved files</p>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button class="p-4 bg-card rounded-lg border border-border hover:border-accent transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center group-hover:bg-accent/30 transition-colors">
+                                    <i class="fas fa-robot text-accent text-lg"></i>
+                                </div>
+                                <div class="text-left">
+                                    <h3 class="font-medium">Ask AI</h3>
+                                    <p class="text-sm text-muted-foreground">Find stations</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Currently Playing/Recording Section -->
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <!-- Now Playing -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                                <i class="fas fa-play-circle text-primary"></i>
+                                Now Playing
+                            </h2>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-4">
+                                    <!-- Radio station logo placeholder -->
+                                    <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-music text-white text-xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium" data-bind="currentStation.name" data-mock="true">Jazz FM 91.3</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="currentTrack.title" data-mock="true">Miles Davis - Kind of Blue</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="currentStation.location" data-mock="true">New York, NY</p>
+                                    </div>
+                                    <div class="wave-animation">
+                                        <div class="wave-bar"></div>
+                                        <div class="wave-bar"></div>
+                                        <div class="wave-bar"></div>
+                                        <div class="wave-bar"></div>
+                                        <div class="wave-bar"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <button class="w-8 h-8 rounded-full bg-secondary hover:bg-primary transition-colors flex items-center justify-center">
+                                        <i class="fas fa-heart text-sm"></i>
+                                    </button>
+                                    <button class="w-10 h-10 rounded-full bg-primary hover:bg-primary/90 transition-colors flex items-center justify-center">
+                                        <i class="fas fa-pause text-primary-foreground"></i>
+                                    </button>
+                                    <button class="w-8 h-8 rounded-full bg-destructive hover:bg-destructive/90 transition-colors flex items-center justify-center">
+                                        <i class="fas fa-circle text-destructive-foreground text-xs"></i>
+                                    </button>
+                                    <div class="flex-1"></div>
+                                    <button class="w-8 h-8 rounded-full bg-secondary hover:bg-accent transition-colors flex items-center justify-center">
+                                        <i class="fas fa-share text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Recordings -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                                <i class="fas fa-record-vinyl text-destructive"></i>
+                                Active Recordings
+                            </h2>
+                            <div class="space-y-3">
+                                <!-- @MAP: activeRecordings.map(recording => ( -->
+                                <div class="flex items-center gap-3 p-3 bg-secondary rounded-lg">
+                                    <div class="w-2 h-2 bg-destructive rounded-full animate-pulse"></div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm" data-bind="recording.stationName" data-mock="true">Classical WQXR</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="recording.duration" data-mock="true">Recording for 12:34</p>
+                                    </div>
+                                    <button class="text-muted-foreground hover:text-destructive" data-event="click:stopRecording">
+                                        <i class="fas fa-stop text-sm"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center gap-3 p-3 bg-secondary rounded-lg">
+                                    <div class="w-2 h-2 bg-destructive rounded-full animate-pulse"></div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm" data-bind="recording.stationName" data-mock="true">Rock 101.5 FM</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="recording.duration" data-mock="true">Recording for 5:18</p>
+                                    </div>
+                                    <button class="text-muted-foreground hover:text-destructive" data-event="click:stopRecording">
+                                        <i class="fas fa-stop text-sm"></i>
+                                    </button>
+                                </div>
+                                <!-- @END_MAP )) -->
+                                
+                                <button class="w-full py-2 border border-border rounded-lg text-sm text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
+                                    + Start New Recording
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Station Grid -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold">Popular Stations</h2>
+                            <div class="flex gap-2">
+                                <button class="px-3 py-1 bg-primary text-primary-foreground rounded-lg text-sm">All</button>
+                                <button class="px-3 py-1 bg-secondary text-muted-foreground hover:text-foreground rounded-lg text-sm">Jazz</button>
+                                <button class="px-3 py-1 bg-secondary text-muted-foreground hover:text-foreground rounded-lg text-sm">Rock</button>
+                                <button class="px-3 py-1 bg-secondary text-muted-foreground hover:text-foreground rounded-lg text-sm">Classical</button>
+                                <button class="px-3 py-1 bg-secondary text-muted-foreground hover:text-foreground rounded-lg text-sm">News</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <!-- @MAP: popularStations.map(station => ( -->
+                            <div class="bg-card rounded-lg border border-border p-4 hover:border-primary transition-all group cursor-pointer">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-broadcast-tower text-white"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium group-hover:text-primary transition-colors" data-bind="station.name" data-mock="true">Jazz FM 91.3</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="station.genre" data-mock="true">Smooth Jazz</p>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                        <span class="text-xs text-muted-foreground" data-bind="station.listeners" data-mock="true">2.1k</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-muted-foreground mb-3" data-bind="station.currentTrack" data-mock="true">Now Playing: Coltrane - A Love Supreme</p>
+                                <div class="flex items-center gap-2">
+                                    <button class="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm hover:bg-primary/90 transition-colors">
+                                        <i class="fas fa-play mr-2"></i>Play
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-destructive transition-colors">
+                                        <i class="fas fa-circle text-xs"></i>
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                                        <i class="fas fa-heart text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg border border-border p-4 hover:border-primary transition-all group cursor-pointer">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-music text-white"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium group-hover:text-primary transition-colors" data-bind="station.name" data-mock="true">Rock 101.5</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="station.genre" data-mock="true">Classic Rock</p>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                        <span class="text-xs text-muted-foreground" data-bind="station.listeners" data-mock="true">5.8k</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-muted-foreground mb-3" data-bind="station.currentTrack" data-mock="true">Now Playing: Led Zeppelin - Stairway to Heaven</p>
+                                <div class="flex items-center gap-2">
+                                    <button class="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm hover:bg-primary/90 transition-colors">
+                                        <i class="fas fa-play mr-2"></i>Play
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-destructive transition-colors">
+                                        <i class="fas fa-circle text-xs"></i>
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                                        <i class="fas fa-heart text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg border border-border p-4 hover:border-primary transition-all group cursor-pointer">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-microphone text-white"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium group-hover:text-primary transition-colors" data-bind="station.name" data-mock="true">NPR News</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="station.genre" data-mock="true">News & Talk</p>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                        <span class="text-xs text-muted-foreground" data-bind="station.listeners" data-mock="true">12.4k</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-muted-foreground mb-3" data-bind="station.currentTrack" data-mock="true">Live: Morning Edition with Steve Inskeep</p>
+                                <div class="flex items-center gap-2">
+                                    <button class="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm hover:bg-primary/90 transition-colors">
+                                        <i class="fas fa-play mr-2"></i>Play
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-destructive transition-colors">
+                                        <i class="fas fa-circle text-xs"></i>
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                                        <i class="fas fa-heart text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg border border-border p-4 hover:border-primary transition-all group cursor-pointer">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-violin text-white"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium group-hover:text-primary transition-colors" data-bind="station.name" data-mock="true">Classical WQXR</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="station.genre" data-mock="true">Classical</p>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                        <span class="text-xs text-muted-foreground" data-bind="station.listeners" data-mock="true">3.2k</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-muted-foreground mb-3" data-bind="station.currentTrack" data-mock="true">Now Playing: Bach - Brandenburg Concerto No. 3</p>
+                                <div class="flex items-center gap-2">
+                                    <button class="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm hover:bg-primary/90 transition-colors">
+                                        <i class="fas fa-play mr-2"></i>Play
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-destructive transition-colors">
+                                        <i class="fas fa-circle text-xs"></i>
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                                        <i class="fas fa-heart text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg border border-border p-4 hover:border-primary transition-all group cursor-pointer">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-red-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-guitar text-white"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium group-hover:text-primary transition-colors" data-bind="station.name" data-mock="true">Alt Rock 105</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="station.genre" data-mock="true">Alternative</p>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                        <span class="text-xs text-muted-foreground" data-bind="station.listeners" data-mock="true">4.1k</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-muted-foreground mb-3" data-bind="station.currentTrack" data-mock="true">Now Playing: Arctic Monkeys - Do I Wanna Know?</p>
+                                <div class="flex items-center gap-2">
+                                    <button class="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm hover:bg-primary/90 transition-colors">
+                                        <i class="fas fa-play mr-2"></i>Play
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-destructive transition-colors">
+                                        <i class="fas fa-circle text-xs"></i>
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                                        <i class="fas fa-heart text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg border border-border p-4 hover:border-primary transition-all group cursor-pointer">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-drum text-white"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium group-hover:text-primary transition-colors" data-bind="station.name" data-mock="true">Electronic Mix</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="station.genre" data-mock="true">Electronic</p>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                        <span class="text-xs text-muted-foreground" data-bind="station.listeners" data-mock="true">7.9k</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-muted-foreground mb-3" data-bind="station.currentTrack" data-mock="true">Now Playing: Daft Punk - Get Lucky</p>
+                                <div class="flex items-center gap-2">
+                                    <button class="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm hover:bg-primary/90 transition-colors">
+                                        <i class="fas fa-play mr-2"></i>Play
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-destructive transition-colors">
+                                        <i class="fas fa-circle text-xs"></i>
+                                    </button>
+                                    <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                                        <i class="fas fa-heart text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Recordings -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold">Recent Recordings</h2>
+                            <button class="text-primary hover:text-primary/80 text-sm">View All</button>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- @MAP: recentRecordings.map(recording => ( -->
+                            <div class="bg-card rounded-lg border border-border p-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-file-audio text-primary"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium" data-bind="recording.title" data-mock="true">Jazz Session - Saturday Night</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="recording.station" data-mock="true">Jazz FM 91.3</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="recording.dateTime" data-mock="true">Dec 16, 2023 - 45:23</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+                                            <i class="fas fa-play text-xs"></i>
+                                        </button>
+                                        <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                                            <i class="fas fa-download text-xs"></i>
+                                        </button>
+                                        <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-destructive transition-colors">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg border border-border p-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-file-audio text-primary"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-medium" data-bind="recording.title" data-mock="true">Morning News Digest</h3>
+                                        <p class="text-sm text-muted-foreground" data-bind="recording.station" data-mock="true">NPR News</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="recording.dateTime" data-mock="true">Dec 15, 2023 - 1:12:45</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+                                            <i class="fas fa-play text-xs"></i>
+                                        </button>
+                                        <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                                            <i class="fas fa-download text-xs"></i>
+                                        </button>
+                                        <button class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center hover:bg-destructive transition-colors">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <!-- @END_COMPONENT: ContentArea -->
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <!-- @COMPONENT: AIAssistantModal -->
+    <!-- @STATE: isAIModalOpen:boolean = false -->
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 hidden" id="aiModal" data-implementation="Toggle visibility based on isAIModalOpen state">
+        <div class="fixed right-4 top-20 bottom-4 w-96 bg-card border border-border rounded-lg shadow-2xl flex flex-col">
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-border">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+                            <i class="fas fa-robot text-accent-foreground text-sm"></i>
+                        </div>
+                        <h3 class="font-semibold">AI Radio Assistant</h3>
+                    </div>
+                    <button class="w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center" data-event="click:closeAIModal">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+                <p class="text-sm text-muted-foreground mt-2">Ask me to find radio stations using natural language!</p>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="flex-1 p-4 overflow-y-auto scrollbar-hide">
+                <div class="space-y-4">
+                    <!-- AI Message -->
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-robot text-accent-foreground text-xs"></i>
+                        </div>
+                        <div class="bg-secondary rounded-lg p-3 max-w-[80%]">
+                            <p class="text-sm">Hi! I'm your AI radio assistant. I can help you find stations by describing what you want to listen to. Try saying something like "Find me some chill jazz stations" or "I want to listen to 90s rock".</p>
+                        </div>
+                    </div>
+
+                    <!-- User Message -->
+                    <div class="flex gap-3 justify-end">
+                        <div class="bg-primary rounded-lg p-3 max-w-[80%]">
+                            <p class="text-sm text-primary-foreground" data-mock="true">Find me some relaxing classical music for studying</p>
+                        </div>
+                        <div class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span class="text-xs font-medium" data-bind="user.initials" data-mock="true">JD</span>
+                        </div>
+                    </div>
+
+                    <!-- AI Response -->
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-robot text-accent-foreground text-xs"></i>
+                        </div>
+                        <div class="bg-secondary rounded-lg p-3 max-w-[80%]">
+                            <p class="text-sm mb-3">Perfect! I found some great classical stations for studying. Here are my top recommendations:</p>
+                            
+                            <!-- Station Suggestions -->
+                            <div class="space-y-2">
+                                <div class="bg-card rounded-lg p-3 border border-border">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4 class="font-medium text-sm">Classical WQXR</h4>
+                                        <span class="text-xs text-muted-foreground">New York</span>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mb-2">Curated classical music perfect for concentration</p>
+                                    <div class="flex gap-2">
+                                        <button class="flex-1 py-1 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90 transition-colors">
+                                            <i class="fas fa-play mr-1"></i>Play
+                                        </button>
+                                        <button class="w-6 h-6 bg-secondary rounded flex items-center justify-center hover:bg-destructive transition-colors">
+                                            <i class="fas fa-circle text-[8px]"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="bg-card rounded-lg p-3 border border-border">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4 class="font-medium text-sm">Calm Radio Classical</h4>
+                                        <span class="text-xs text-muted-foreground">International</span>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mb-2">Peaceful classical pieces for relaxation</p>
+                                    <div class="flex gap-2">
+                                        <button class="flex-1 py-1 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90 transition-colors">
+                                            <i class="fas fa-play mr-1"></i>Play
+                                        </button>
+                                        <button class="w-6 h-6 bg-secondary rounded flex items-center justify-center hover:bg-destructive transition-colors">
+                                            <i class="fas fa-circle text-[8px]"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-4 border-t border-border">
+                <div class="flex gap-2">
+                    <input 
+                        type="text" 
+                        placeholder="Ask for station recommendations..."
+                        class="flex-1 px-3 py-2 bg-secondary text-foreground placeholder-muted-foreground rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                        data-mock="true"
+                    />
+                    <button class="w-10 h-10 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center">
+                        <i class="fas fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                    <button class="px-2 py-1 bg-secondary text-muted-foreground hover:text-foreground rounded text-xs">Jazz for work</button>
+                    <button class="px-2 py-1 bg-secondary text-muted-foreground hover:text-foreground rounded text-xs">Upbeat pop</button>
+                    <button class="px-2 py-1 bg-secondary text-muted-foreground hover:text-foreground rounded text-xs">News stations</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AIAssistantModal -->
+
+    <!-- @COMPONENT: GlobalAudioPlayer -->
+    <div class="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40">
+        <div class="flex items-center gap-4 max-w-screen-xl mx-auto">
+            <!-- Current Track Info -->
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-music text-white"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h4 class="font-medium truncate" data-bind="currentTrack.title" data-mock="true">Miles Davis - Kind of Blue</h4>
+                    <p class="text-sm text-muted-foreground truncate" data-bind="currentStation.name" data-mock="true">Jazz FM 91.3 - New York, NY</p>
+                </div>
+            </div>
+
+            <!-- Player Controls -->
+            <div class="flex items-center gap-3">
+                <button class="w-8 h-8 rounded-full bg-secondary hover:bg-primary transition-colors flex items-center justify-center">
+                    <i class="fas fa-backward text-sm"></i>
+                </button>
+                <button class="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 transition-colors flex items-center justify-center">
+                    <i class="fas fa-pause text-primary-foreground"></i>
+                </button>
+                <button class="w-8 h-8 rounded-full bg-secondary hover:bg-primary transition-colors flex items-center justify-center">
+                    <i class="fas fa-forward text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Volume & Actions -->
+            <div class="flex items-center gap-3 min-w-0 flex-1 justify-end">
+                <button class="w-8 h-8 rounded-full bg-secondary hover:bg-accent transition-colors flex items-center justify-center">
+                    <i class="fas fa-heart text-sm"></i>
+                </button>
+                <button class="w-8 h-8 rounded-full bg-destructive hover:bg-destructive/90 transition-colors flex items-center justify-center">
+                    <i class="fas fa-circle text-destructive-foreground text-xs"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-volume-up text-muted-foreground text-sm"></i>
+                    <div class="w-20 h-1 bg-secondary rounded-full">
+                        <div class="w-3/4 h-full bg-primary rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: GlobalAudioPlayer -->
+
+    <script>
+        // TODO: Implement WebSocket connections for real-time streaming
+        // TODO: Implement Node.js streaming APIs for radio capture
+        // TODO: Implement AI integration for natural language radio channel search
+        // TODO: Implement file storage system for recorded audio
+        // TODO: Implement user authentication and session management
+        
+        (function() {
+            // AI Modal Toggle
+            const aiModalTrigger = document.querySelector('button:has(i.fas.fa-robot)');
+            const aiModal = document.getElementById('aiModal');
+            const closeModalBtn = aiModal?.querySelector('[data-event="click:closeAIModal"]');
+
+            if (aiModalTrigger && aiModal) {
+                aiModalTrigger.addEventListener('click', () => {
+                    aiModal.classList.toggle('hidden');
+                });
+            }
+
+            if (closeModalBtn && aiModal) {
+                closeModalBtn.addEventListener('click', () => {
+                    aiModal.classList.add('hidden');
+                });
+            }
+
+            // Click outside to close modal
+            if (aiModal) {
+                aiModal.addEventListener('click', (e) => {
+                    if (e.target === aiModal) {
+                        aiModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Mock audio visualization
+            const waveBars = document.querySelectorAll('.wave-bar');
+            if (waveBars.length > 0) {
+                setInterval(() => {
+                    waveBars.forEach(bar => {
+                        const height = Math.random() * 20 + 8;
+                        bar.style.height = height + 'px';
+                    });
+                }, 150);
+            }
+
+            // Mock recording timer updates
+            const recordingElements = document.querySelectorAll('[data-bind="recording.duration"]');
+            if (recordingElements.length > 0) {
+                setInterval(() => {
+                    recordingElements.forEach(element => {
+                        if (element.textContent.includes('Recording for')) {
+                            const currentTime = element.textContent.split('Recording for ')[1];
+                            const [minutes, seconds] = currentTime.split(':').map(Number);
+                            const newSeconds = seconds + 1;
+                            const newMinutes = newSeconds >= 60 ? minutes + 1 : minutes;
+                            const formattedSeconds = (newSeconds % 60).toString().padStart(2, '0');
+                            const formattedMinutes = newMinutes.toString().padStart(2, '0');
+                            element.textContent = `Recording for ${formattedMinutes}:${formattedSeconds}`;
+                        }
+                    });
+                }, 1000);
+            }
+
+            // Generic button click handlers for demo
+            document.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+
+                // Play button functionality
+                if (button.innerHTML.includes('fa-play')) {
+                    console.log('Play button clicked - would start streaming');
+                    // TODO: Implement actual streaming functionality
+                }
+
+                // Record button functionality
+                if (button.innerHTML.includes('fa-circle') && button.classList.contains('hover:bg-destructive')) {
+                    console.log('Record button clicked - would start recording');
+                    // TODO: Implement recording functionality
+                }
+
+                // Stop recording functionality
+                if (button.querySelector('[data-event="click:stopRecording"]') || 
+                    button.getAttribute('data-event') === 'click:stopRecording') {
+                    console.log('Stop recording clicked');
+                    // TODO: Implement stop recording functionality
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

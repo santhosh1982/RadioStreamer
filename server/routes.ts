@@ -1,16 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import { seedDummyUser } from "./seedData";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { isAuthenticated } from "./dummyAuth";
 import { radioService } from "./services/radioService";
 import { recordingService } from "./services/recordingService";
 import { aiService } from "./services/aiService";
 import { insertRadioStationSchema, insertRecordingSchema, insertFavoriteSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  await seedDummyUser();
   // Auth middleware
-  await setupAuth(app);
+  // await setupAuth(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -46,6 +48,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating station:", error);
       res.status(400).json({ message: "Failed to create station" });
+    }
+  });
+
+  // Cleanup endpoint for removing duplicates
+  app.post("/api/stations/cleanup", isAuthenticated, async (req, res) => {
+    try {
+      const deletedCount = await storage.removeDuplicateRadioStations();
+      res.json({ message: `Removed ${deletedCount} duplicate stations`, deletedCount });
+    } catch (error) {
+      console.error("Error cleaning up stations:", error);
+      res.status(500).json({ message: "Failed to cleanup stations" });
     }
   });
 
@@ -170,6 +183,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing favorite:", error);
       res.status(500).json({ message: "Failed to remove favorite" });
+    }
+  });
+
+  // Audio proxy route for CORS handling
+  app.get("/api/stream/:stationId", async (req, res) => {
+    try {
+      const { stationId } = req.params;
+      const stations = await storage.getRadioStations();
+      const station = stations.find(s => s.id === stationId);
+      
+      if (!station) {
+        return res.status(404).json({ message: "Station not found" });
+      }
+
+      // Proxy the audio stream
+      const fetch = (await import('node-fetch')).default;
+      const response = await fetch(station.url);
+      
+      if (!response.ok) {
+        return res.status(502).json({ message: "Failed to connect to radio stream" });
+      }
+
+      // Set appropriate headers for audio streaming
+      res.setHeader('Content-Type', response.headers.get('content-type') || 'audio/mpeg');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cache-Control', 'no-cache');
+      
+      // Pipe the stream
+      response.body?.pipe(res);
+    } catch (error) {
+      console.error("Error proxying stream:", error);
+      res.status(500).json({ message: "Failed to proxy stream" });
     }
   });
 
